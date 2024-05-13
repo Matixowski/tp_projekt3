@@ -1,0 +1,11 @@
+C:/Users/magnu/tpprojekt3/scikit_build_example/CMakeFiles/_core.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/CMakeFiles/INSTALL.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/CMakeFiles/ALL_BUILD.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/CMakeFiles/ZERO_CHECK.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/CMakeFiles/INSTALL.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/CMakeFiles/ALL_BUILD.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/source/CMakeFiles/INSTALL.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/source/3rd_party/CMakeFiles/nodesoup.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/source/3rd_party/CMakeFiles/INSTALL.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/source/matplot/CMakeFiles/matplot.dir
+C:/Users/magnu/tpprojekt3/scikit_build_example/matplotplusplus/source/matplot/CMakeFiles/INSTALL.dir

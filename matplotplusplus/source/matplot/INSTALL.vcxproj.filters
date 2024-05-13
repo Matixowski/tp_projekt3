@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\magnu\tpprojekt3\scikit_build_example\CMakeFiles\b21a077bff458558fd88bf1762a72aa6\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{7EC9AD0B-13F1-3E76-A1BD-6AC4AF84FF1D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
