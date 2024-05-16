@@ -2,8 +2,6 @@
 # policies up to CMake 3.27
 cmake_minimum_required(VERSION 3.15...3.27)
 
-set(pybind11_DIR ./.conda/Lib/site-packages/pybind11/share/cmake/pybind11)
-
 # Scikit-build-core sets these values for you, or you can just hard-code the
 # name and version.
 project(
@@ -14,7 +12,7 @@ project(
 # Find the module development requirements (requires FindPython from 3.17 or
 # scikit-build-core's built-in backport)
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
-find_package(pybind11 CONFIG REQUIRED)
+add_subdirectory(pybind11)
 
 # Add a library using FindPython's tooling (pybind11 also provides a helper like
 # this)

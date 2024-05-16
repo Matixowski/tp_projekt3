@@ -141,7 +141,7 @@ PYBIND11_MODULE(_core, m) {
         Plot signal
     )pbdoc");
 
-    m.def("gen_square_wave", &genSquareWave, R"pbdoc(
+    m.def("genSquareWave", &genSquareWave, R"pbdoc(
         Generate square wave
     )pbdoc");
 
