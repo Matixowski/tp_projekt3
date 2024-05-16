@@ -2,7 +2,7 @@
 # policies up to CMake 3.27
 cmake_minimum_required(VERSION 3.15...3.27)
 
-set(pybind11_DIR /Users/magnu/AppData/Roaming/Python/share/cmake/pybind11)
+set(pybind11_DIR ./.conda/Lib/site-packages/pybind11/share/cmake/pybind11)
 
 # Scikit-build-core sets these values for you, or you can just hard-code the
 # name and version.

@@ -75,6 +75,24 @@ void spectrum(std::vector<std::complex<double>> a, int n, int samprate) {
     matplot::show();
 }
 
+void plot(std::vector<double> signal) {
+    matplot::plot(signal);
+    matplot::show();
+}
+
+std::vector<double> genSquareWave(double amplitude, int wavelength, int samples) {
+    std::vector<double> wave;
+    wave.resize(samples);
+    int half_wl = wavelength / 2;
+    for (int i = 0; i < samples / wavelength; i++) {
+        for (int j = 0; j < half_wl; j++) {
+            wave[i*wavelength + j] = amplitude;
+            wave[i*wavelength + j + half_wl] = -amplitude;
+        }
+    }
+    return wave;
+}
+
 PYBIND11_MODULE(_core, m) {
     m.doc() = R"pbdoc(
         Pybind11 example plugin
@@ -117,6 +135,14 @@ PYBIND11_MODULE(_core, m) {
 
     m.def("deriv", &deriv, R"pbdoc(
         Signal derivative
+    )pbdoc");
+
+    m.def("plot", &plot, R"pbdoc(
+        Plot signal
+    )pbdoc");
+
+    m.def("gen_square_wave", &genSquareWave, R"pbdoc(
+        Generate square wave
     )pbdoc");
 
 /*#ifdef VERSION_INFO
