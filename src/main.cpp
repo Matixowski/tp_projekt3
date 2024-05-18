@@ -80,15 +80,52 @@ void plot(std::vector<double> signal) {
     matplot::show();
 }
 
-std::vector<double> genSquareWave(double amplitude, int wavelength, int samples) {
+std::vector<double> genSquareWave(double amplitude, int wavelength, int samples, int phase_in_degrees) {
     std::vector<double> wave;
     wave.resize(samples);
-    int half_wl = wavelength / 2;
-    for (int i = 0; i < samples / wavelength; i++) {
-        for (int j = 0; j < half_wl; j++) {
-            wave[i*wavelength + j] = amplitude;
-            wave[i*wavelength + j + half_wl] = -amplitude;
+    int phase_in_samples = lround(phase_in_degrees / 360.0 * wavelength);
+    for (int i = 0; i < wavelength; i++) {
+        if ((i + wavelength - phase_in_samples) * 2 / wavelength % 2) {
+            wave[i] = -amplitude;
         }
+        else {
+            wave[i] = amplitude;
+        }
+    }
+    for (int i = wavelength; i < samples; i++) {
+        wave[i] = wave[i % wavelength];
+    }
+    return wave;
+}
+
+std::vector<double> genSawtoothWave(double amplitude, int wavelength, int samples, int phase_in_degrees) {
+    std::vector<double> wave;
+    wave.resize(samples);
+    int phase_in_samples = lround(phase_in_degrees / 360.0 * wavelength);
+    double step = amplitude * 2 / (wavelength - 1);
+    for (int i = 0; i < wavelength; i++) {
+        int j = (i + wavelength - phase_in_samples) % wavelength;
+        if (j == wavelength - 1) {
+            wave[i] = amplitude;
+        }
+        else {
+            wave[i] = -amplitude + j * step;
+        }
+    }
+    for (int i = wavelength; i < samples; i++) {
+        wave[i] = wave[i % wavelength];
+    }
+    return wave;
+}
+
+std::vector<double> genSineWave(double amplitude, int wavelength, int samples, int phase_in_degrees) {
+    std::vector<double> wave;
+    wave.resize(samples);
+    for (int i = 0; i < wavelength; i++) {
+        wave[i] = amplitude * sin(2 * M_PI * (1.0 * i / wavelength - phase_in_degrees / 360.0));
+    }
+    for (int i = wavelength; i < samples; i++) {
+        wave[i] = wave[i % wavelength];
     }
     return wave;
 }
@@ -143,6 +180,14 @@ PYBIND11_MODULE(_core, m) {
 
     m.def("genSquareWave", &genSquareWave, R"pbdoc(
         Generate square wave
+    )pbdoc");
+
+    m.def("genSawtoothWave", &genSawtoothWave, R"pbdoc(
+        Generate sawtooth wave
+    )pbdoc");
+
+    m.def("genSineWave", &genSineWave, R"pbdoc(
+        Generate sine wave
     )pbdoc");
 
 /*#ifdef VERSION_INFO
