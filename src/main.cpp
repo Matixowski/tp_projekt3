@@ -22,7 +22,7 @@ int add(int i, int j) {
     return i + j;
 }
 
-std::vector<std::complex<double>> dft(py::list a, int n) {
+std::vector<std::complex<double>> dft(std::vector<double> a, int n) {
     std::complex<double> tmp;
     std::complex<double> z;
     std::complex<double> im(0,1);
@@ -31,7 +31,7 @@ std::vector<std::complex<double>> dft(py::list a, int n) {
         z.real(0);
         z.imag(0);
         for (int j = 0; j < n; j++) {
-            tmp.real(a[j].cast<double>());
+            tmp.real(a[j]);
             tmp.imag(0);
             z += tmp * exp(-2.0 * im * M_PI * (((double)i * j) / n));
         }
@@ -56,18 +56,22 @@ std::vector<std::complex<double>> idft(std::vector<std::complex<double>> a, int 
     return y;
 }
 
-std::vector<int> deriv(py::list a, int n) {
-    std::vector<int> y;
+std::vector<float> deriv(std::vector<float> a, int n) {
+    std::vector<float> y;
     for (int i = 0; i < n - 1; i++) {
-        y.push_back(a[i+1].cast<int>() - a[i].cast<int>());
+        y.push_back(a[i+1] - a[i]);
     }
     return y;
 }
 
-void spectrum(std::vector<std::complex<double>> a, int n, int samprate) {
+void spectrum(std::vector<std::complex<double>> a, int n, int samprate, std::string range) {
     std::vector<double> freq;
     std::vector<double> ampl;
-    for (int i = 0; i < n; i++) {
+    int m = n / 2;
+    if (range == "full") {
+        m = n;
+    }
+    for (int i = 0; i < m; i++) {
         freq.push_back((double)samprate * i / n);
         ampl.push_back(sqrt(pow(a[i].real(), 2) + pow(a[i].imag(), 2))/n);
     }
@@ -166,7 +170,7 @@ PYBIND11_MODULE(_core, m) {
         Inverse Fourirer Transform
     )pbdoc");
 
-    m.def("spectrum", &spectrum, R"pbdoc(
+    m.def("spectrum", &spectrum, py::arg(), py::arg(), py::arg(), py::arg("range") = "half", R"pbdoc(
         Display frequency spectrum from DFT
     )pbdoc");
 
