@@ -84,54 +84,60 @@ void plot(std::vector<double> signal) {
     matplot::show();
 }
 
-std::vector<double> genSquareWave(double amplitude, int wavelength, int samples, int phase_in_degrees) {
+std::vector<double> genSquareWave(int period, int samples, double duty_cycle = 0.5, double amplitude = 1, int phase_in_degrees = 0) {
     std::vector<double> wave;
     wave.resize(samples);
-    int phase_in_samples = lround(phase_in_degrees / 360.0 * wavelength);
-    for (int i = 0; i < wavelength; i++) {
-        if ((i + wavelength - phase_in_samples) * 2 / wavelength % 2) {
-            wave[i] = -amplitude;
-        }
-        else {
+    int phase_in_samples = lround(phase_in_degrees / 360.0 * period);
+    int pulse_width = lround(duty_cycle * period);
+    for (int i = 0; i < period; i++) {
+        if ((i + period - phase_in_samples) % period < pulse_width) {
             wave[i] = amplitude;
         }
+        else {
+            wave[i] = -amplitude;
+        }
     }
-    for (int i = wavelength; i < samples; i++) {
-        wave[i] = wave[i % wavelength];
+    for (int i = period; i < samples; i++) {
+        wave[i] = wave[i % period];
     }
     return wave;
 }
 
-std::vector<double> genSawtoothWave(double amplitude, int wavelength, int samples, int phase_in_degrees) {
+std::vector<double> genSawtoothWave(int period, int samples, double amplitude = 1, int phase_in_degrees = 0) {
     std::vector<double> wave;
     wave.resize(samples);
-    int phase_in_samples = lround(phase_in_degrees / 360.0 * wavelength);
-    double step = amplitude * 2 / (wavelength - 1);
-    for (int i = 0; i < wavelength; i++) {
-        int j = (i + wavelength - phase_in_samples) % wavelength;
-        if (j == wavelength - 1) {
+    int phase_in_samples = lround(phase_in_degrees / 360.0 * period);
+    double step = amplitude * 2 / (period - 1);
+    for (int i = 0; i < period; i++) {
+        int j = (i + period - phase_in_samples) % period;
+        if (j == period - 1) {
             wave[i] = amplitude;
         }
         else {
             wave[i] = -amplitude + j * step;
         }
     }
-    for (int i = wavelength; i < samples; i++) {
-        wave[i] = wave[i % wavelength];
+    for (int i = period; i < samples; i++) {
+        wave[i] = wave[i % period];
     }
     return wave;
 }
 
-std::vector<double> genSineWave(double amplitude, int wavelength, int samples, int phase_in_degrees) {
+std::vector<double> genSineWave(int period, int samples, double amplitude = 1, int phase_in_degrees = 0) {
     std::vector<double> wave;
     wave.resize(samples);
-    for (int i = 0; i < wavelength; i++) {
-        wave[i] = amplitude * sin(2 * M_PI * (1.0 * i / wavelength - phase_in_degrees / 360.0));
+    for (int i = 0; i < period; i++) {
+        wave[i] = amplitude * sin(2 * M_PI * (1.0 * i / period - phase_in_degrees / 360.0));
     }
-    for (int i = wavelength; i < samples; i++) {
-        wave[i] = wave[i % wavelength];
+    for (int i = period; i < samples; i++) {
+        wave[i] = wave[i % period];
     }
     return wave;
+}
+
+std::vector<double> genCosineWave(int period, int samples, double amplitude = 1, int phase_in_degrees = 0) {
+    phase_in_degrees -= 90;
+    return genSineWave(period, samples, amplitude, phase_in_degrees);
 }
 
 PYBIND11_MODULE(_core, m) {
@@ -178,20 +184,24 @@ PYBIND11_MODULE(_core, m) {
         Signal derivative
     )pbdoc");
 
-    m.def("plot", &plot, R"pbdoc(
+    m.def("plot", &plot, py::arg("signal"), R"pbdoc(
         Plot signal
     )pbdoc");
 
-    m.def("genSquareWave", &genSquareWave, R"pbdoc(
+    m.def("genSquareWave", &genSquareWave, py::arg("period"), py::arg("samples"), py::arg("duty_cycle") = 0.5, py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
         Generate square wave
     )pbdoc");
 
-    m.def("genSawtoothWave", &genSawtoothWave, R"pbdoc(
+    m.def("genSawtoothWave", &genSawtoothWave, py::arg("period"), py::arg("samples"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
         Generate sawtooth wave
     )pbdoc");
 
-    m.def("genSineWave", &genSineWave, R"pbdoc(
+    m.def("genSineWave", &genSineWave, py::arg("period"), py::arg("samples"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
         Generate sine wave
+    )pbdoc");
+
+    m.def("genCosineWave", &genCosineWave, py::arg("period"), py::arg("samples"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
+        Generate cosine wave
     )pbdoc");
 
 /*#ifdef VERSION_INFO
