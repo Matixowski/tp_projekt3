@@ -3,6 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
+#include <pybind11/numpy.h>
 #include <matplot/matplot.h>
 #include <cmath>
 #include <vector>
@@ -12,15 +13,6 @@
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
-
-struct complexnumber {
-    double real = 0.0;
-    double imaginary = 0.0;
-};
-
-int add(int i, int j) {
-    return i + j;
-}
 
 std::vector<std::complex<double>> dft(std::vector<double> a, int n) {
     std::complex<double> tmp;
@@ -79,65 +71,42 @@ void spectrum(std::vector<std::complex<double>> a, int n, int samprate, std::str
     matplot::show();
 }
 
-void plot(std::vector<double> signal) {
-    matplot::plot(signal);
+void plot(std::vector<double> signal, std::vector<double> t = {}) {
+    if (t.size() == 0) {
+        matplot::plot(signal);
+    }
+    else {
+        matplot::plot(t, signal);
+    }
     matplot::show();
 }
 
-std::vector<double> genSquareWave(int period, int samples, double duty_cycle = 0.5, double amplitude = 1, int phase_in_degrees = 0) {
-    std::vector<double> wave;
-    wave.resize(samples);
-    int phase_in_samples = lround(phase_in_degrees / 360.0 * period);
-    int pulse_width = lround(duty_cycle * period);
-    for (int i = 0; i < period; i++) {
-        if ((i + period - phase_in_samples) % period < pulse_width) {
-            wave[i] = amplitude;
-        }
-        else {
-            wave[i] = -amplitude;
-        }
-    }
-    for (int i = period; i < samples; i++) {
-        wave[i] = wave[i % period];
-    }
-    return wave;
+double genSquareWave(double t, double frequency, double amplitude, double phase_in_degrees) {
+    return amplitude * copysign(1.0, sin(2 * M_PI * (t *frequency - phase_in_degrees / 360)));
 }
 
-std::vector<double> genSawtoothWave(int period, int samples, double amplitude = 1, int phase_in_degrees = 0) {
-    std::vector<double> wave;
-    wave.resize(samples);
-    int phase_in_samples = lround(phase_in_degrees / 360.0 * period);
-    double step = amplitude * 2 / (period - 1);
-    for (int i = 0; i < period; i++) {
-        int j = (i + period - phase_in_samples) % period;
-        if (j == period - 1) {
-            wave[i] = amplitude;
-        }
-        else {
-            wave[i] = -amplitude + j * step;
-        }
-    }
-    for (int i = period; i < samples; i++) {
-        wave[i] = wave[i % period];
-    }
-    return wave;
+double genSawtoothWave(double t, double frequency, double amplitude, double phase_in_degrees) {
+    return amplitude * 2 / M_PI * atan(tan(M_PI * (t *frequency - (phase_in_degrees + 180) / 360)));
 }
 
-std::vector<double> genSineWave(int period, int samples, double amplitude = 1, int phase_in_degrees = 0) {
-    std::vector<double> wave;
-    wave.resize(samples);
-    for (int i = 0; i < period; i++) {
-        wave[i] = amplitude * sin(2 * M_PI * (1.0 * i / period - phase_in_degrees / 360.0));
-    }
-    for (int i = period; i < samples; i++) {
-        wave[i] = wave[i % period];
-    }
-    return wave;
+double genSineWave(double t, double frequency, double amplitude, double phase_in_degrees) {
+    return amplitude * sin(2 * M_PI * (t *frequency - phase_in_degrees / 360));
 }
 
-std::vector<double> genCosineWave(int period, int samples, double amplitude = 1, int phase_in_degrees = 0) {
-    phase_in_degrees -= 90;
-    return genSineWave(period, samples, amplitude, phase_in_degrees);
+double genSignal(double t, std::string type, double frequency, double amplitude = 1, double phase_in_degrees = 0) {
+    if (type == "square") {
+        return genSquareWave(t, frequency, amplitude, phase_in_degrees);
+    }
+    if (type == "sawtooth") {
+        return genSawtoothWave(t, frequency, amplitude, phase_in_degrees);
+    }
+    if (type == "sine") {
+        return genSineWave(t, frequency, amplitude, phase_in_degrees);
+    }
+    if (type == "cosine") {
+        phase_in_degrees -= 90;
+        return genSineWave(t, frequency, amplitude, phase_in_degrees);
+    }
 }
 
 PYBIND11_MODULE(_core, m) {
@@ -156,18 +125,6 @@ PYBIND11_MODULE(_core, m) {
            rdft
     )pbdoc";
 
-    m.def("add", &add, R"pbdoc(
-        Add two numbers
-
-        Some other explanation about the add function.
-    )pbdoc");
-
-    m.def("subtract", [](int i, int j) { return i - j; }, R"pbdoc(
-        Subtract two numbers
-
-        Some other explanation about the subtract function.
-    )pbdoc");
-
     m.def("dft", &dft, R"pbdoc(
         Direct Fourier Transform
     )pbdoc");
@@ -184,24 +141,13 @@ PYBIND11_MODULE(_core, m) {
         Signal derivative
     )pbdoc");
 
-    m.def("plot", &plot, py::arg("signal"), R"pbdoc(
+    std::vector<double> v = {};
+    m.def("plot", &plot, py::arg("signal"), py::arg("t") = v, R"pbdoc(
         Plot signal
     )pbdoc");
 
-    m.def("genSquareWave", &genSquareWave, py::arg("period"), py::arg("samples"), py::arg("duty_cycle") = 0.5, py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
-        Generate square wave
-    )pbdoc");
-
-    m.def("genSawtoothWave", &genSawtoothWave, py::arg("period"), py::arg("samples"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
-        Generate sawtooth wave
-    )pbdoc");
-
-    m.def("genSineWave", &genSineWave, py::arg("period"), py::arg("samples"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
-        Generate sine wave
-    )pbdoc");
-
-    m.def("genCosineWave", &genCosineWave, py::arg("period"), py::arg("samples"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
-        Generate cosine wave
+    m.def("genSignal", py::vectorize(genSignal), py::arg("t"), py::arg("type"), py::arg("frequency"), py::arg("amplitude") = 1, py::arg("phase_in_degrees") = 0, R"pbdoc(
+        Generate signal
     )pbdoc");
 
 /*#ifdef VERSION_INFO
